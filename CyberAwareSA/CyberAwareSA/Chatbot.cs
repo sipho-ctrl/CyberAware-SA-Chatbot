@@ -97,7 +97,6 @@ namespace CyberAwareSA
         {
             string input;
 
-            // ← NEW LINE: Add this helpful hint right here
             Console.WriteLine("Type 'help' at any time to see what I can do.\n");
 
             do
@@ -149,13 +148,17 @@ namespace CyberAwareSA
             {
                 Console.WriteLine("Phishing emails often have urgent language, spelling errors, and suspicious links. Always check the sender's email address before clicking anything!");
             }
+            else if (input.Contains("scam") || input.Contains("fraud"))
+            {
+                Console.WriteLine("Scammers often create fake urgency. Never share your OTP or PIN with anyone, even if they claim to be from your bank!");
+            }
             else if (input.Contains("browsing") || input.Contains("safe browsing"))
             {
                 Console.WriteLine("Look for 'https://' and a padlock icon in the address bar. Avoid clicking on pop-up ads and never enter personal info on unsecured sites.");
             }
             else if (input.Contains("help"))
             {
-                Console.WriteLine("You can ask me about: passwords, phishing, safe browsing, my purpose, or how I'm doing. Type 'exit' to quit.");
+                Console.WriteLine("You can ask me about: passwords, phishing, safe browsing, scams, my purpose, or how I'm doing. Type 'exit' to quit.");
             }
             else if (input.Contains("exit") || input.Contains("quit"))
             {
@@ -164,7 +167,7 @@ namespace CyberAwareSA
             else
             {
                 // Default fallback for unrecognised input (graceful error handling)
-                Console.WriteLine("I didn't quite understand that. Could you rephrase? Try asking about passwords, phishing, or safe browsing.");
+                Console.WriteLine("I didn't quite understand that. Could you rephrase? Try asking about passwords, phishing, safe browsing, or scams.");
             }
 
             Console.WriteLine();

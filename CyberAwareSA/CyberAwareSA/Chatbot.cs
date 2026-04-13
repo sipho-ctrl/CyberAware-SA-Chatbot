@@ -1,18 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace CyberAwareSA
 {
     /// <summary>
     /// Main chatbot class that handles all cybersecurity awareness interactions.
-    /// Includes ASCII art, user personalisation, response system, and input validation.
+    /// Includes ASCII art, user personalisation, response system, input validation, and memory feature.
     /// </summary>
     public class Chatbot
     {
         // Stores the user's name for personalised responses
         private string userName;
 
-        // Stores the user's interest area (for memory feature - to be expanded)
-        private string userInterest;
+        // Stores the user's favourite cybersecurity topic
+        private string userFavouriteTopic;
+
+        // Dictionary to store user preferences and remembered information
+        private Dictionary<string, string> userMemory;
 
         // Audio service for voice greeting
         private AudioService audio;
@@ -21,12 +25,13 @@ namespace CyberAwareSA
         private UIHelper ui;
 
         /// <summary>
-        /// Constructor initialises the audio service and UI helper.
+        /// Constructor initialises the audio service, UI helper, and memory storage.
         /// </summary>
         public Chatbot()
         {
             audio = new AudioService();
             ui = new UIHelper();
+            userMemory = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -39,8 +44,68 @@ namespace CyberAwareSA
             ui.DrawHeader();
             DisplayAsciiArt();
             AskUserName();
+            StoreUserInMemory();
+            AskFavouriteTopic();
             PersonalisedGreeting();
             MainConversationLoop();
+        }
+
+        /// <summary>
+        /// Stores the user's name in memory for later use.
+        /// </summary>
+        private void StoreUserInMemory()
+        {
+            userMemory["name"] = userName;
+        }
+
+        /// <summary>
+        /// Asks the user for their favourite cybersecurity topic and stores it in memory.
+        /// </summary>
+        private void AskFavouriteTopic()
+        {
+            ui.BotResponse("To help me personalise your experience, what cybersecurity topic interests you the most?");
+            ui.InfoMessage("You can say: passwords, phishing, scams, safe browsing, or all topics");
+            Console.Write($"{userName}: ");
+            string topic = Console.ReadLine()?.ToLower().Trim();
+
+            if (topic.Contains("password"))
+            {
+                userFavouriteTopic = "passwords";
+                userMemory["favourite_topic"] = "passwords";
+                ui.SuccessMessage("Great! I'll remember that you're interested in password safety.");
+            }
+            else if (topic.Contains("phish"))
+            {
+                userFavouriteTopic = "phishing";
+                userMemory["favourite_topic"] = "phishing";
+                ui.SuccessMessage("Great! I'll remember that you're interested in phishing awareness.");
+            }
+            else if (topic.Contains("scam") || topic.Contains("fraud"))
+            {
+                userFavouriteTopic = "scams";
+                userMemory["favourite_topic"] = "scams";
+                ui.SuccessMessage("Great! I'll remember that you're interested in scam detection.");
+            }
+            else if (topic.Contains("browsing"))
+            {
+                userFavouriteTopic = "safe browsing";
+                userMemory["favourite_topic"] = "safe browsing";
+                ui.SuccessMessage("Great! I'll remember that you're interested in safe browsing habits.");
+            }
+            else if (topic.Contains("all"))
+            {
+                userFavouriteTopic = "all topics";
+                userMemory["favourite_topic"] = "all";
+                ui.SuccessMessage("Great! I'll cover a wide range of cybersecurity topics for you.");
+            }
+            else
+            {
+                userFavouriteTopic = "general cybersecurity";
+                userMemory["favourite_topic"] = "general";
+                ui.InfoMessage("I'll share general cybersecurity tips with you. You can always ask me about specific topics!");
+            }
+
+            ui.DrawSeparator();
         }
 
         /// <summary>
@@ -49,10 +114,8 @@ namespace CyberAwareSA
         /// </summary>
         private void DisplayAsciiArt()
         {
-            // Set console text colour to cyan for visual appeal
             Console.ForegroundColor = ConsoleColor.Cyan;
 
-            // ASCII art representing a shield/cybersecurity theme
             string asciiArt = @"
     ╔══════════════════════════════════════════════════════╗
     ║     ██████╗██╗   ██╗██████╗ ███████╗██████╗          ║
@@ -67,8 +130,6 @@ namespace CyberAwareSA
     ╚══════════════════════════════════════════════════════╝";
 
             Console.WriteLine(asciiArt);
-
-            // Reset colour back to default
             Console.ResetColor();
             Console.WriteLine();
         }
@@ -82,7 +143,6 @@ namespace CyberAwareSA
             Console.Write("Please enter your name: ");
             userName = Console.ReadLine();
 
-            // Input validation: loop until valid name is provided
             while (string.IsNullOrWhiteSpace(userName))
             {
                 Console.Write("Name cannot be empty. Please enter your name: ");
@@ -91,15 +151,15 @@ namespace CyberAwareSA
         }
 
         /// <summary>
-        /// Displays a personalised welcome message using the user's name.
+        /// Displays a personalised welcome message using the user's name and remembered preferences.
         /// Uses green text for positive, welcoming tone.
         /// </summary>
         private void PersonalisedGreeting()
         {
-            ui.SuccessMessage($"Welcome, {userName}!");
+            ui.SuccessMessage($"Welcome back, {userName}!");
             Console.WriteLine();
-            ui.BotResponse("I'm your cybersecurity awareness assistant. I'm here to help you stay safe online.");
-            ui.BotResponse("You can ask me about password safety, phishing, safe browsing, or just say 'help'.");
+            ui.BotResponse($"I'm your cybersecurity awareness assistant. As someone interested in {userFavouriteTopic}, I'll focus on keeping you safe online.");
+            ui.BotResponse("You can ask me about password safety, phishing, safe browsing, scams, or just say 'help'.");
             ui.DrawSeparator();
         }
 
@@ -118,13 +178,11 @@ namespace CyberAwareSA
 
             do
             {
-                // Display prompt with user's name for personalised interaction
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Write($"{userName}: ");
                 Console.ResetColor();
                 input = Console.ReadLine()?.ToLower().Trim();
 
-                // Input validation: handle empty input gracefully
                 if (string.IsNullOrWhiteSpace(input))
                 {
                     ui.WarningMessage("I didn't quite understand that. Could you rephrase?");
@@ -138,23 +196,32 @@ namespace CyberAwareSA
 
         /// <summary>
         /// Processes user input and generates appropriate responses.
-        /// Uses keyword matching to determine the topic and provide relevant cybersecurity advice.
+        /// Uses keyword matching and remembers user preferences for personalised responses.
         /// </summary>
         /// <param name="input">The user's input message, converted to lowercase.</param>
         private void RespondToUser(string input)
         {
-            // Keyword-based response system
             if (input.Contains("how are you"))
             {
-                ui.BotResponse($"I'm doing great, {userName}! Thanks for asking. I'm excited to help you learn about cybersecurity.");
+                ui.BotResponse($"I'm doing great, {userName}! Thanks for asking. I'm excited to help you learn about {userFavouriteTopic}.");
+            }
+            else if (input.Contains("remember me") || input.Contains("what do you know about me"))
+            {
+                ui.BotResponse($"I remember that your name is {userMemory["name"]} and you're interested in {userFavouriteTopic}. Is there anything specific you'd like to learn about today?");
             }
             else if (input.Contains("purpose") || input.Contains("what can you do"))
             {
-                ui.BotResponse("My purpose is to educate South African citizens about online safety. I can teach you about passwords, phishing, and safe browsing!");
+                ui.BotResponse("My purpose is to educate South African citizens about online safety. I can teach you about passwords, phishing, safe browsing, and scams!");
             }
             else if (input.Contains("password"))
             {
                 ui.BotResponse("Strong passwords should be at least 12 characters, include numbers, symbols, uppercase, and lowercase. Never reuse passwords across different sites!");
+
+                // Personalised follow-up based on memory
+                if (userFavouriteTopic == "passwords")
+                {
+                    ui.BotResponse($"Since you're interested in password safety, {userName}, would you like me to share tips on creating a strong master password?");
+                }
             }
             else if (input.Contains("phish"))
             {
@@ -170,15 +237,14 @@ namespace CyberAwareSA
             }
             else if (input.Contains("help"))
             {
-                ui.BotResponse("You can ask me about: passwords, phishing, safe browsing, scams, my purpose, or how I'm doing. Type 'exit' to quit.");
+                ui.BotResponse($"You can ask me about: passwords, phishing, safe browsing, scams, my purpose, or how I'm doing. You can also ask 'what do you know about me' to see what I remember. Type 'exit' to quit.");
             }
             else if (input.Contains("exit") || input.Contains("quit"))
             {
-                ui.BotResponse($"Goodbye, {userName}! Stay safe online!");
+                ui.BotResponse($"Goodbye, {userName}! Stay safe online! Remember to use strong passwords and stay alert for phishing attempts.");
             }
             else
             {
-                // Default fallback for unrecognised input (graceful error handling)
                 ui.WarningMessage("I didn't quite understand that. Could you rephrase? Try asking about passwords, phishing, safe browsing, or scams.");
             }
 

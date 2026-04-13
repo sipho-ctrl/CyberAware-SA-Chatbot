@@ -17,12 +17,16 @@ namespace CyberAwareSA
         // Audio service for voice greeting
         private AudioService audio;
 
+        // UI helper for enhanced console interface
+        private UIHelper ui;
+
         /// <summary>
-        /// Constructor initialises the audio service.
+        /// Constructor initialises the audio service and UI helper.
         /// </summary>
         public Chatbot()
         {
             audio = new AudioService();
+            ui = new UIHelper();
         }
 
         /// <summary>
@@ -32,6 +36,7 @@ namespace CyberAwareSA
         public void Start()
         {
             audio.PlayGreeting();
+            ui.DrawHeader();
             DisplayAsciiArt();
             AskUserName();
             PersonalisedGreeting();
@@ -91,13 +96,11 @@ namespace CyberAwareSA
         /// </summary>
         private void PersonalisedGreeting()
         {
-            // Green text for positive greeting
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"\nHello, {userName}! Welcome to CyberAware SA.");
-            Console.ResetColor();
-
-            Console.WriteLine("I'm your cybersecurity awareness assistant. I'm here to help you stay safe online.");
-            Console.WriteLine("You can ask me about password safety, phishing, safe browsing, or just say 'help'.\n");
+            ui.SuccessMessage($"Welcome, {userName}!");
+            Console.WriteLine();
+            ui.BotResponse("I'm your cybersecurity awareness assistant. I'm here to help you stay safe online.");
+            ui.BotResponse("You can ask me about password safety, phishing, safe browsing, or just say 'help'.");
+            ui.DrawSeparator();
         }
 
         /// <summary>
@@ -109,20 +112,22 @@ namespace CyberAwareSA
         {
             string input;
 
-            Console.WriteLine("Type 'help' at any time to see what I can do.\n");
+            ui.InfoMessage("Type 'help' at any time to see what I can do.");
+            ui.DrawSeparator('─', ConsoleColor.DarkGray);
+            Console.WriteLine();
 
             do
             {
                 // Display prompt with user's name for personalised interaction
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Write($"{userName}: ");
+                Console.ResetColor();
                 input = Console.ReadLine()?.ToLower().Trim();
 
                 // Input validation: handle empty input gracefully
                 if (string.IsNullOrWhiteSpace(input))
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("Chatbot: I didn't quite understand that. Could you rephrase?");
-                    Console.ResetColor();
+                    ui.WarningMessage("I didn't quite understand that. Could you rephrase?");
                     continue;
                 }
 
@@ -138,51 +143,46 @@ namespace CyberAwareSA
         /// <param name="input">The user's input message, converted to lowercase.</param>
         private void RespondToUser(string input)
         {
-            // Display "Chatbot:" in cyan for visual distinction
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write("Chatbot: ");
-            Console.ResetColor();
-
             // Keyword-based response system
             if (input.Contains("how are you"))
             {
-                Console.WriteLine($"I'm doing great, {userName}! Thanks for asking. I'm excited to help you learn about cybersecurity.");
+                ui.BotResponse($"I'm doing great, {userName}! Thanks for asking. I'm excited to help you learn about cybersecurity.");
             }
             else if (input.Contains("purpose") || input.Contains("what can you do"))
             {
-                Console.WriteLine("My purpose is to educate South African citizens about online safety. I can teach you about passwords, phishing, and safe browsing!");
+                ui.BotResponse("My purpose is to educate South African citizens about online safety. I can teach you about passwords, phishing, and safe browsing!");
             }
             else if (input.Contains("password"))
             {
-                Console.WriteLine("Strong passwords should be at least 12 characters, include numbers, symbols, uppercase, and lowercase. Never reuse passwords across different sites!");
+                ui.BotResponse("Strong passwords should be at least 12 characters, include numbers, symbols, uppercase, and lowercase. Never reuse passwords across different sites!");
             }
             else if (input.Contains("phish"))
             {
-                Console.WriteLine("Phishing emails often have urgent language, spelling errors, and suspicious links. Always check the sender's email address before clicking anything!");
+                ui.BotResponse("Phishing emails often have urgent language, spelling errors, and suspicious links. Always check the sender's email address before clicking anything!");
             }
             else if (input.Contains("scam") || input.Contains("fraud"))
             {
-                Console.WriteLine("Scammers often create fake urgency. Never share your OTP or PIN with anyone, even if they claim to be from your bank!");
+                ui.BotResponse("Scammers often create fake urgency. Never share your OTP or PIN with anyone, even if they claim to be from your bank!");
             }
             else if (input.Contains("browsing") || input.Contains("safe browsing"))
             {
-                Console.WriteLine("Look for 'https://' and a padlock icon in the address bar. Avoid clicking on pop-up ads and never enter personal info on unsecured sites.");
+                ui.BotResponse("Look for 'https://' and a padlock icon in the address bar. Avoid clicking on pop-up ads and never enter personal info on unsecured sites.");
             }
             else if (input.Contains("help"))
             {
-                Console.WriteLine("You can ask me about: passwords, phishing, safe browsing, scams, my purpose, or how I'm doing. Type 'exit' to quit.");
+                ui.BotResponse("You can ask me about: passwords, phishing, safe browsing, scams, my purpose, or how I'm doing. Type 'exit' to quit.");
             }
             else if (input.Contains("exit") || input.Contains("quit"))
             {
-                Console.WriteLine($"Goodbye, {userName}! Stay safe online!");
+                ui.BotResponse($"Goodbye, {userName}! Stay safe online!");
             }
             else
             {
                 // Default fallback for unrecognised input (graceful error handling)
-                Console.WriteLine("I didn't quite understand that. Could you rephrase? Try asking about passwords, phishing, safe browsing, or scams.");
+                ui.WarningMessage("I didn't quite understand that. Could you rephrase? Try asking about passwords, phishing, safe browsing, or scams.");
             }
 
-            Console.WriteLine();
+            ui.DrawSeparator('─', ConsoleColor.DarkGray);
         }
     }
 }

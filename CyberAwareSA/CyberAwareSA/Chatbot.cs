@@ -14,12 +14,24 @@ namespace CyberAwareSA
         // Stores the user's interest area (for memory feature - to be expanded)
         private string userInterest;
 
+        // Audio service for voice greeting
+        private AudioService audio;
+
+        /// <summary>
+        /// Constructor initialises the audio service.
+        /// </summary>
+        public Chatbot()
+        {
+            audio = new AudioService();
+        }
+
         /// <summary>
         /// Starts the chatbot application.
         /// This is the main entry point called from Program.cs.
         /// </summary>
         public void Start()
         {
+            audio.PlayGreeting();
             DisplayAsciiArt();
             AskUserName();
             PersonalisedGreeting();

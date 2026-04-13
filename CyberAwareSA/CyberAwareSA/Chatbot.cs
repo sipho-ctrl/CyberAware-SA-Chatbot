@@ -5,7 +5,7 @@ namespace CyberAwareSA
 {
     /// <summary>
     /// Main chatbot class that handles all cybersecurity awareness interactions.
-    /// Includes ASCII art, user personalisation, response system, input validation, and memory feature.
+    /// Includes ASCII art, user personalisation, response system, input validation, memory, and sentiment detection.
     /// </summary>
     public class Chatbot
     {
@@ -24,13 +24,17 @@ namespace CyberAwareSA
         // UI helper for enhanced console interface
         private UIHelper ui;
 
+        // Sentiment analyzer for emotion detection
+        private SentimentAnalyzer sentimentAnalyzer;
+
         /// <summary>
-        /// Constructor initialises the audio service, UI helper, and memory storage.
+        /// Constructor initialises the audio service, UI helper, memory storage, and sentiment analyzer.
         /// </summary>
         public Chatbot()
         {
             audio = new AudioService();
             ui = new UIHelper();
+            sentimentAnalyzer = new SentimentAnalyzer();
             userMemory = new Dictionary<string, string>();
         }
 
@@ -196,11 +200,22 @@ namespace CyberAwareSA
 
         /// <summary>
         /// Processes user input and generates appropriate responses.
-        /// Uses keyword matching and remembers user preferences for personalised responses.
+        /// Uses keyword matching, remembers user preferences, and detects sentiment for empathetic responses.
         /// </summary>
         /// <param name="input">The user's input message, converted to lowercase.</param>
         private void RespondToUser(string input)
         {
+            // Detect sentiment first
+            string sentiment = sentimentAnalyzer.DetectSentiment(input);
+
+            // Get empathetic response if sentiment is emotional
+            string empatheticResponse = sentimentAnalyzer.GetEmpatheticResponse(sentiment, userName);
+            if (empatheticResponse != null)
+            {
+                ui.BotResponse(empatheticResponse);
+            }
+
+            // Keyword-based response system
             if (input.Contains("how are you"))
             {
                 ui.BotResponse($"I'm doing great, {userName}! Thanks for asking. I'm excited to help you learn about {userFavouriteTopic}.");
@@ -222,14 +237,33 @@ namespace CyberAwareSA
                 {
                     ui.BotResponse($"Since you're interested in password safety, {userName}, would you like me to share tips on creating a strong master password?");
                 }
+
+                // Provide supportive tip if user is worried or frustrated
+                string supportiveTip = sentimentAnalyzer.GetSupportiveTip("password", sentiment);
+                if (supportiveTip != null)
+                {
+                    ui.InfoMessage(supportiveTip);
+                }
             }
             else if (input.Contains("phish"))
             {
                 ui.BotResponse("Phishing emails often have urgent language, spelling errors, and suspicious links. Always check the sender's email address before clicking anything!");
+
+                string supportiveTip = sentimentAnalyzer.GetSupportiveTip("phish", sentiment);
+                if (supportiveTip != null)
+                {
+                    ui.InfoMessage(supportiveTip);
+                }
             }
             else if (input.Contains("scam") || input.Contains("fraud"))
             {
                 ui.BotResponse("Scammers often create fake urgency. Never share your OTP or PIN with anyone, even if they claim to be from your bank!");
+
+                string supportiveTip = sentimentAnalyzer.GetSupportiveTip("scam", sentiment);
+                if (supportiveTip != null)
+                {
+                    ui.InfoMessage(supportiveTip);
+                }
             }
             else if (input.Contains("browsing") || input.Contains("safe browsing"))
             {
@@ -243,9 +277,23 @@ namespace CyberAwareSA
             {
                 ui.BotResponse($"Goodbye, {userName}! Stay safe online! Remember to use strong passwords and stay alert for phishing attempts.");
             }
-            else
+            else if (!input.Contains("how are you") && !input.Contains("purpose") && !input.Contains("help") &&
+                     !input.Contains("password") && !input.Contains("phish") && !input.Contains("scam") &&
+                     !input.Contains("browsing") && !input.Contains("remember me") && !input.Contains("exit"))
             {
-                ui.WarningMessage("I didn't quite understand that. Could you rephrase? Try asking about passwords, phishing, safe browsing, or scams.");
+                // Default fallback for unrecognised input (graceful error handling)
+                if (sentiment == "worried")
+                {
+                    ui.BotResponse("I understand this might feel overwhelming. Let's start simple. Try asking me about 'passwords' or 'phishing' and I'll give you easy tips to stay safe.");
+                }
+                else if (sentiment == "frustrated")
+                {
+                    ui.BotResponse("I hear you. Let me make this easier. Just type 'help' and I'll show you some simple things we can talk about.");
+                }
+                else
+                {
+                    ui.WarningMessage("I didn't quite understand that. Could you rephrase? Try asking about passwords, phishing, safe browsing, or scams.");
+                }
             }
 
             ui.DrawSeparator('─', ConsoleColor.DarkGray);

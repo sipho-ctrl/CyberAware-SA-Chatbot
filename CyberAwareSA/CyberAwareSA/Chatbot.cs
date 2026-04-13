@@ -97,6 +97,9 @@ namespace CyberAwareSA
         {
             string input;
 
+            // ← NEW LINE: Add this helpful hint right here
+            Console.WriteLine("Type 'help' at any time to see what I can do.\n");
+
             do
             {
                 // Display prompt with user's name for personalised interaction

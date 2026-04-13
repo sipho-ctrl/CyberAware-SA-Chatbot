@@ -1,4 +1,14 @@
-﻿using System;
+﻿// ============================================================
+// CyberAware SA - Cybersecurity Awareness Chatbot
+// Author: Sipho Swartbooi
+// Module: PROG6221 - Programming 2A
+// Date: April 2026
+// Description: A console-based chatbot that educates South
+//              African citizens about cybersecurity threats
+//              including phishing, passwords, and safe browsing.
+// ============================================================
+
+using System;
 
 namespace CyberAwareSA
 {

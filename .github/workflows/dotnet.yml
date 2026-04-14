@@ -1,4 +1,4 @@
-name: .NET
+name: .NET Build
 
 on:
   push:
@@ -8,22 +8,28 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
+    runs-on: windows-latest
     
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-    
-    - name: List files (for debugging)
-      run: ls -la
-    
+        
+    - name: List directory structure
+      run: dir /s /b
+      
+    - name: Find csproj file
+      id: find
+      run: |
+        for /r . %%i in (*.csproj) do echo "PROJECT=%%i" >> $env:GITHUB_OUTPUT
+      shell: cmd
+        
     - name: Restore dependencies
-      run: dotnet restore CyberAwareSA/CyberAwareSA.csproj
-    
-    - name: Build
-      run: dotnet build CyberAwareSA/CyberAwareSA.csproj --no-restore --configuration Release
+      run: dotnet restore *.csproj
+      
+    - name: Build project
+      run: dotnet build *.csproj --no-restore --configuration Release

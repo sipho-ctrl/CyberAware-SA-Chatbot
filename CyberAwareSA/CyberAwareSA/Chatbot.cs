@@ -19,7 +19,7 @@ namespace CyberAwareSA
         private Dictionary<string, string> userMemory;
 
         // Audio service for voice greeting
-        private AudioService audio;
+        private AudioService audio;    
 
         // UI helper for enhanced console interface
         private UIHelper ui;
